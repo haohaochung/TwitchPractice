@@ -1,6 +1,8 @@
 var client_id = "c6i04bjucdhwk66mzqa1exmh8kifdl";
-var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&game=OverWatch&limit=20";
+var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&game=OverWatch&limit=10";
 var apiUrlWithRequestHeader = "https://api.twitch.tv/kraken/streams/?game=OverWatch&limit=2";
+let offset = 0;
+let isLoading = false;
 
 // Use XMLHttpRequest
 var xhr = new XMLHttpRequest();
@@ -39,6 +41,8 @@ function getData(cb) {
         }
     });
     */
+    isLoading = true;
+    var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&game=OverWatch&limit=10&offset=" + offset;
     $.ajax({
         url: apiUrl,
         success: (response) => {
@@ -59,20 +63,39 @@ function getData(cb) {
     });
     
 }
+function appendData() {
+    getData( (err, data) => {
 
-getData( (err, data) => {
+        if(err) {
+            console.log(err);
+        }
+        else {
+            const streams = data.streams;
+            const $row = $('.row');
 
-    if(err) {
-        console.log(err);
-    }
-    else {
-        const streams = data.streams;
-        const $row = $('.row');
+            for(let stream of streams) {
+                $row.append(getColumn(stream));
+            } 
+        }
 
-        for(let stream of streams) {
-            $row.append(getColumn(stream));
-        } 
-    }
+        offset+=10;
+        isLoading = false;
+    });
+}
+
+
+$(document).ready(function() {
+    appendData();
+
+    $(window).scroll(function() {
+
+        if( $(window).scrollTop() + $(window).height() >= $(document).height()-200 ) {
+            if(!isLoading) {
+                
+                appendData();
+            }
+        }
+    });
 });
 
 /* CallBack Function 
@@ -92,7 +115,8 @@ function getColumn(data) {
     return `
     <div class = "col">
         <div class = "preview">
-            <img src = "${data.preview.medium}">
+            <div class = "placeholder"></div>
+            <img src = "${data.preview.medium}" onload="this.style.opacity=1">
         </div>
         <div class="bottom">
             <div class = "avatar">
