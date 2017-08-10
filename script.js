@@ -3,6 +3,7 @@ var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&g
 var apiUrlWithRequestHeader = "https://api.twitch.tv/kraken/streams/?game=OverWatch&limit=2";
 let offset = 0;
 let isLoading = false;
+let language = 'zh-tw';
 
 // Use XMLHttpRequest
 var xhr = new XMLHttpRequest();
@@ -28,7 +29,7 @@ $.ajax({
 
 */
 //有名FUNCTION
-function getData(cb) {
+function getData(language, cb) {
 
     /*
     $.ajax({
@@ -42,7 +43,7 @@ function getData(cb) {
     });
     */
     isLoading = true;
-    var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&game=OverWatch&limit=10&offset=" + offset;
+    var apiUrl = "https://api.twitch.tv/kraken/streams/?client_id="+ client_id + "&game=OverWatch&limit=10&offset=" + offset + "&language="+ language;
     $.ajax({
         url: apiUrl,
         success: (response) => {
@@ -63,8 +64,8 @@ function getData(cb) {
     });
     
 }
-function appendData() {
-    getData( (err, data) => {
+function appendData(language) {
+    getData(language,  (err, data) => {
 
         if(err) {
             console.log(err);
@@ -83,16 +84,23 @@ function appendData() {
     });
 }
 
+function changeLang(lang) {
+
+    $('div h1').text(window.I18N[lang].TITLE);
+    language = lang;
+    $('.row').empty();
+    appendData(language);
+}
 
 $(document).ready(function() {
-    appendData();
+    appendData(language);
 
     $(window).scroll(function() {
 
         if( $(window).scrollTop() + $(window).height() >= $(document).height()-200 ) {
             if(!isLoading) {
                 
-                appendData();
+                appendData(language);
             }
         }
     });
